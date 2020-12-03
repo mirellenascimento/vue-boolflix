@@ -5,7 +5,7 @@
     <title>Boolflix</title>
 
     <!-- FONT AWESOME 5 - gmail account -->
-    <!-- <script src="https://kit.fontawesome.com/6f40fb596f.js" crossorigin="anonymous"></script> -->
+    <script src="https://kit.fontawesome.com/6f40fb596f.js" crossorigin="anonymous"></script>
 
     <!-- FONT AWESOME 4.7-->
     <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"> -->
@@ -43,18 +43,38 @@
           </div>
           <div class="row">
             <div class="col d-flex justify-content-center flex-wrap">
-              <template v-for="movie in searchMovies">
+              <template v-for="movie in movies">
                 <div class="movie-template">
-                  <img :src="movieImage" alt="">
+                  <img @error="errorFlag" :src="moviePosterImage + movie.poster_path" alt="">
                   <p>Titolo: {{movie.title}}</p>
                   <p>Titolo Originale: {{movie.original_title}}</p>
-                  <p v-if="movie.original_language = 'en'">Inglese</p>
-                  <p>Voto: {{movie.vote_average}}</p>
-
-
+                  <img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt="">
+                  <span v-for="star in 5"><i :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span>
                 </div>
-
               </template>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                      <span class="sr-only">Previous</span>
+                    </a>
+                  </li>
+                  <li class="page-item"><a class="page-link" href="#">1</a></li>
+                  <li class="page-item"><a class="page-link" href="#">2</a></li>
+                  <li class="page-item"><a class="page-link" href="#">3</a></li>
+                  <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                      <span class="sr-only">Next</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
 
             </div>
 

@@ -1,27 +1,84 @@
-.debug .row{
-  border: 2px solid red;
-  min-height: 100px;
+body{
+  background-color: black;
 }
 
-.debug .col{
-  border: 1px solid blue;
+.col{
   min-height: 100px;
 }
 
 header img{
-  height: 80px;
+  height: 40px;
+  margin-left: 40px;
+}
+
+header li{
+  list-style: none;
+  display: inline-block;
+  color: white;
+}
+
+.btn-primary{
+  background-color: grey;
+  border: none;
+}
+
+.btn-secondary{
+  background-color: black;
+  border: none;
+}
+
+.showingmovies{
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+   scrollbar-width: none;
+}
+
+.fa-7x{
+  padding: 20px;
 }
 
 .movie-template{
-  min-height: 200px;
-  width: 200px;
-  margin: 20px;
-  padding: 20px;
+  min-height: 450px;
+  position: relative;
   background-color: navy;
   color: white;
 }
 
-.movie-template img{
-  width: 90%;
-  margin: auto;
+.movie-poster img{
+  height: 450px;
+}
+
+.movie-template:hover .movie-poster img{
+  opacity: 0;
+  transition: 0.8s;
+}
+
+.movie-info{
+  width: 100%;
+  height: calc(100% - 40px);
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 40px;
+  overflow-x: scroll;
+  -ms-overflow-style: none;
+   scrollbar-width: none;
+ }
+
+.movie-info img{
+  width: 20px;
+}
+
+.movie-template:hover .movie-info{
+  opacity: 1;
+  transition: 0.3s;
+}
+
+.comma:not(:last-child):after {
+  content: ", ";
+}
+
+.comma:last-child:after {
+  content: ". ";
 }

@@ -22,62 +22,60 @@
     <!-- CSS - STYLE -->
     <link rel="stylesheet" href="css/style.css">
   </head>
-  <body class="debug">
+  <body>
     <div id="root">
       <header>
-        <div class="container">
+        <div class="container-fluid">
           <div class="row">
-            <div class="col">
+            <div class="col d-flex align-items-center">
               <img src="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="">
+            </div>
+            <div class="col d-flex justify-content-end align-items-center">
+              <input v-model="searchInput" type="text" name="search-bar" value="" placeholder="Search a movie...">
+              <button @click="searchMovie" type="submit" name="button">Search</button>
+              <select v-model="language" name="language" id="language">
+                <option v-for="language in languagesList" :value="language.value"><img @error="errorFlag" :src="'img/flags/'+language.image" alt="">{{language.name}}</option>
+              </select>
             </div>
           </div>
         </div>
       </header>
       <main>
-        <div class="container">
+        <div class="container-fluid">
           <div class="row">
-            <div class="col d-flex justify-content-center align-items-center">
-              <input v-model="searchInput" type="text" name="search-bar" value="" placeholder="Search a movie...">
-              <button @click="searchMovie" type="submit" name="button">Search</button>
+            <div class="col d-flex align-items-end">
+              <ul>
+                <li type="button" class="btn btn-primary">Home</li>
+                <li v-for="home in homeMovies" @click="selectHome(home)" type="button" class="btn btn-secondary">{{home.name}}</li>
+              </ul>
             </div>
           </div>
           <div class="row">
-            <div class="col d-flex justify-content-center flex-wrap">
+            <div class="showingmovies col d-flex">
+              <div class="d-flex align-items-center" id="prev">
+                <span><i class="fas fa-chevron-left fa-7x"></i></span>
+              </div>
               <template v-for="movie in movies">
                 <div class="movie-template">
-                  <img @error="errorFlag" :src="moviePosterImage + movie.poster_path" alt="">
-                  <p>Titolo: {{movie.title}}</p>
-                  <p>Titolo Originale: {{movie.original_title}}</p>
-                  <img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt="">
-                  <span v-for="star in 5"><i :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span>
+                  <div class="movie-poster">
+                    <img @error="errorFlag" :src="moviePosterImage + movie.poster_path" alt="">
+                  </div>
+                  <div class="movie-info">
+                    <p><b>Titolo: </b>{{movie.title}}</p>
+                    <p><b>Titolo Originale: </b>{{movie.original_title}}</p>
+                    <p><b>Voto: </b><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></p>
+                    <p><b>Data di uscita: </b>{{movie.release_date}}</p>
+                    <p><b>Genere: </b><span class="comma" v-for="gen in genreFilter(movie)">{{gen.name}}</span></p>
+                    <p><b>Lingua originale: </b><img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt=""><p>
+                    <p v-if="movie.overview === ''"><b>Overview: </b>englishOverview(movie)</p> <!-- need to apply function whent it's fixed -->
+                    <p v-else><b>Overview: </b>{{movie.overview}}</p>
+                  </div>
                 </div>
               </template>
+              <div class="d-flex align-items-center fa-7x" id="next">
+                <span><i class="fas fa-chevron-right"></i></span>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col">
-              <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                  <li class="page-item">
-                    <a class="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">&laquo;</span>
-                      <span class="sr-only">Previous</span>
-                    </a>
-                  </li>
-                  <li class="page-item"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item"><a class="page-link" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li class="page-item">
-                    <a class="page-link" href="#" aria-label="Next">
-                      <span aria-hidden="true">&raquo;</span>
-                      <span class="sr-only">Next</span>
-                    </a>
-                  </li>
-                </ul>
-              </nav>
-
-            </div>
-
           </div>
         </div>
 

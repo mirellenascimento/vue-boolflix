@@ -1,79 +1,101 @@
 const API_KEY = 'bbba21a7230b4c2b7a98694c2cb6c828';
 const homeMovies= [
   {
-    name: 'Now Playing',
-    url: 'now_playing'
+    name: 'Top rated',
+    url: 'top_rated',
+    movies: [],
+    movieIndex: 1
   },
   {
     name: 'Popular',
-    url: 'popular'
+    url: 'popular',
+    movies: [],
+    movieIndex: 1
   },
   {
-    name: 'Top rated',
-    url: 'top_rated'
+    name: 'Now Playing',
+    url: 'now_playing',
+    movies: [],
+    movieIndex: 1
   },
   {
     name: 'Upcoming',
-    url: 'upcoming'
+    url: 'upcoming',
+    movies: [],
+    movieIndex: 1
   }
 ];
 
 const languagesList = [
   {
     value: 'en-US',
-    image: 'en.svg',
-    name: 'English(USA)'
+    name: 'English',
   },
   {
     value: 'it-IT',
-    image: 'it.svg',
-    name: 'Italian'
+    name: 'Italian',
+
   },
   {
     value: 'fr-FR',
-    image: 'fr.svg',
-    name: 'French'
+    name: 'French',
+  },
+  {
+    value: 'pt-BR',
+    name: 'Português',
   },
 ]
 
 const myApp = new Vue({
   el: '#root',
   data: {
-    searchInput: '',
+
+    // setting home-page
     language: 'it-IT',
     languagesList: [...languagesList],
-    movies: [],
     homeMovies: [...homeMovies],
-    genreMovies: [],
-    showingMovies: '',
-    searchPage: 1,
+    homeIndex: 1,
+
+    //general settings
     moviePosterImage: 'https://image.tmdb.org/t/p/w342',
+    genreMovies: [],
 
+    //first colunm
+    movies: [],
 
+    //searching movies
+    searchInput: '',
+    searchIndex: 1,
   },
 
   mounted(){
-    axios.get('https://api.themoviedb.org/3/movie/popular', {
-      params: {
-        'api_key': API_KEY,
-        language: this.language,
+
+    //sets menu and movies at colunms
+    this.moviesList();
+
+    //uploads all available genres used of movies info
+    this.setGenre()
+
+    // toogles between standats and sticky menu
+    window.onscroll = () => {
+      let navbar = document.getElementById("header");
+      let base = document.getElementById("header-base");
+      let sticky = base.offsetTop;
+
+      if (window.pageYOffset > sticky) {
+        navbar.classList.add("active");
+        base.classList.add("inactive")
+
+      } else {
+        navbar.classList.remove("active");
+        base.classList.remove("inactive")
       }
-    }).then(popular => this.movies = popular.data.results);
-
-
-
-    axios.get('https://api.themoviedb.org/3/genre/movie/list', {
-      params: {
-        'api_key': API_KEY,
-        language: this.language,
-      }
-    }).then(genere => this.genreMovies = genere.data.genres);
-
+    };
   },
 
   methods:{
+    //searches for a movie or TV serie
     searchMovie(){
-      console.log(this.searchInput);
       if (this.searchInput === '') {
 
       } else {
@@ -82,11 +104,10 @@ const myApp = new Vue({
             'api_key': API_KEY,
             language: this.language,
             query: this.searchInput,
-            page: this.searchPage,
+            page: this.searchIndex,
           }
         }).then(mov => {
           this.movies = mov.data.results
-          // console.log(mov.data.results);
         });
 
         axios.get('https://api.themoviedb.org/3/search/tv', {
@@ -94,14 +115,115 @@ const myApp = new Vue({
             'api_key': API_KEY,
             language: this.language,
             query: this.searchInput,
-            page: this.searchPage,
+            page: this.searchIndex,
           }
         }).then(tv => {
           tv.data.results.forEach(movie => this.movies.push(movie));
-          console.log(tv.data.results);
-          // console.log(this.movies)
         });
+
+        document.getElementById('search-results').innerHTML = `
+        <div class="col-12 title-list">
+          <h3>Results for:<br>${this.searchInput}</h3>
+        </div>`;
+
+        document.getElementById('next-search').innerHTML = `
+        <div>
+          <span><i class="fas fa-chevron-right fa-5x"></i></span>
+        </div>`;
       };
+    },
+
+    //on search results, shows previous page of movies when < is clicked
+    searchPrev(){
+      this.searchIndex--;
+      this.searchMovie();
+      this.$nextTick(function(){
+        scrollRight("search_display");
+      });
+    },
+
+    //on search results, shows next page of movies when > is clicked
+    searchNext(){
+      this.searchIndex++;
+      this.searchMovie();
+      this.$nextTick(function(){
+        scrollLeft("search_display");
+      });
+    },
+
+    //press enter to search
+    searchEnter(event){
+  		if (event.which === 13){
+  			this.searchMovie();
+  		};
+    },
+
+    //generate lists of movies
+    moviesList(){
+      for (let i = 0; i < this.homeMovies.length; i++) {
+        axios.get(`https://api.themoviedb.org/3/movie/${this.homeMovies[i].url}`, {
+          params: {
+            'api_key': API_KEY,
+            language: this.language,
+            page: this.homeIndex,
+
+          }
+        }).then(now => {
+          this.homeMovies[i].movies = now.data.results;
+        });
+      }
+    },
+
+    //shows previous page of movies when < is clicked
+    prev(home){
+      home.movieIndex--;
+
+      axios.get(`https://api.themoviedb.org/3/movie/${home.url}`, {
+        params: {
+          'api_key': API_KEY,
+          language: this.language,
+          page: home.movieIndex,
+
+        }
+      }).then(now => {
+        home.movies = now.data.results;
+      });
+
+      this.$nextTick(function(){
+        scrollRight(home.url);
+      });
+
+    },
+
+    //shows next page of movies when > is clicked
+    next(home){
+      home.movieIndex++;
+
+      axios.get(`https://api.themoviedb.org/3/movie/${home.url}`, {
+        params: {
+          'api_key': API_KEY,
+          language: this.language,
+          page: home.movieIndex,
+
+        }
+      }).then(now => {
+        home.movies = now.data.results;
+      });
+
+      this.$nextTick(function(){
+        scrollLeft(home.url);
+      });
+
+    },
+
+    scrollToList(chosenList){
+      let list = document.getElementById(chosenList);
+      list.scrollIntoView();
+    },
+
+    changeLanguage(){
+      this.moviesList();
+      this.setGenre();
     },
 
     // Tranforms vote from 1 to 10 into 1 to 5 stars
@@ -109,46 +231,31 @@ const myApp = new Vue({
       return Math.ceil(vote/2);
     },
 
-    //image to show when flag is not found
-    errorFlag(e){
-        e.target.src = 'https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png'
+    //flag image to show when flag is not found
+    errorFlag(f){
+        f.target.src = 'img/boolflixworld.png'
     },
 
-    //places overview in english when translation is not found TO BE FIXED!!!!!!
-    englishOverview(movie){
-      let movieId = movie.id;
-      let newOverview = '';
-      axios.get('https://api.themoviedb.org/3/find', {
-        params: {
-          external_id: movieId,
-          'api_key': API_KEY,
-          language: 'en-US',
-          external_source: 'imdb_id',
-        }
-      }).then(overview => newOverview = overview.data.results);
-      return movieId
+    //poster image to show when flag is not found
+    errorPoster(p){
+        p.target.src = 'img/boolflixposter.png'
     },
 
-    selectHome(home){
-      axios.get(`https://api.themoviedb.org/3/movie/${home.url}`, {
+    //uploads all available genres used of movies info
+    setGenre(){
+      axios.get('https://api.themoviedb.org/3/genre/movie/list', {
         params: {
           'api_key': API_KEY,
           language: this.language,
+          page: this.homeIndex,
+
         }
-      }).then(h => this.movies = h.data.results);
-      console.log(this.movies);
+      }).then(genere => this.genreMovies = genere.data.genres);
     },
 
+    //filters the genres for each movie
     genreFilter(movie){
       return this.genreMovies.filter(e => movie.genre_ids.includes(e.id));
     },
-
   },
-
-  computed: {
-
-  },
-
-
-
 });

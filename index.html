@@ -7,11 +7,11 @@
     <!-- FONT AWESOME 5 - gmail account -->
     <script src="https://kit.fontawesome.com/6f40fb596f.js" crossorigin="anonymous"></script>
 
-    <!-- FONT AWESOME 4.7-->
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"> -->
-
     <!-- BOOTSTRAP 4 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+
+    <!-- FUNCTIONS -->
+    <script src="js/functions.js" charset="utf-8"></script>
 
     <!-- VUE -->
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -24,66 +24,227 @@
   </head>
   <body>
     <div id="root">
+
+      <!-- HEADER -->
       <header>
-        <div class="container-fluid">
+        <div id="header-base" class="container-fluid">
           <div class="row">
-            <div class="col d-flex align-items-center">
-              <img src="https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="">
+
+            <!-- logo -->
+            <div class="col-7 d-flex align-items-end">
+              <img src="img/boolflixlogo.png" alt="logo">
+
+              <!-- MENU  -->
+              <div class="col d-flex align-items-end">
+                <ul>
+                  <li v-for="home in homeMovies" @click="scrollToList(home.url)" type="button" class="btn btn-secondary">{{home.name}}</li>
+                </ul>
+              </div>
             </div>
-            <div class="col d-flex justify-content-end align-items-center">
-              <input v-model="searchInput" type="text" name="search-bar" value="" placeholder="Search a movie...">
+
+            <!-- search-bar -->
+            <div class="top-right col d-flex justify-content-end align-items-center">
+              <input v-model="searchInput" @keydown="searchEnter" type="text" name="search-bar" value="" placeholder="Search a movie...">
               <button @click="searchMovie" type="submit" name="button">Search</button>
-              <select v-model="language" name="language" id="language">
+
+              <!-- language -->
+              <select @change="changeLanguage" v-model="language" name="language" id="language">
                 <option v-for="language in languagesList" :value="language.value"><img @error="errorFlag" :src="'img/flags/'+language.image" alt="">{{language.name}}</option>
               </select>
             </div>
           </div>
-        </div>
-      </header>
-      <main>
-        <div class="container-fluid">
+        </div><!-- ENDHEADER -->
+
+        <!-- Sticky MENU -->
+        <div id="header" class="inactive-header container-fluid">
           <div class="row">
-            <div class="col d-flex align-items-end">
+
+            <!-- logo -->
+            <div class="col-7 d-flex align-items-center">
+              <img src="img/boolflixlogo.png" alt="logo">
+
+              <!-- MENU  -->
               <ul>
-                <li type="button" class="btn btn-primary">Home</li>
-                <li v-for="home in homeMovies" @click="selectHome(home)" type="button" class="btn btn-secondary">{{home.name}}</li>
+                <li type="button" class="btn btn-secondary" @click="scrollToList(homeMovies[0].url)">Home</li>
+                <li v-for="home in homeMovies" @click="scrollToList(home.url)" type="button" class="btn btn-secondary">{{home.name}}</li>
               </ul>
             </div>
           </div>
-          <div class="row">
-            <div class="showingmovies col d-flex">
-              <div class="d-flex align-items-center" id="prev">
-                <span><i class="fas fa-chevron-left fa-7x"></i></span>
+        </div><!-- END Sticky MENU -->
+      </header>
+
+      <!-- MAIN -->
+      <main>
+        <div id="main_container" class="container-fluid">
+
+          <!-- MOVIES -->
+          <!-- seach results -->
+          <div v-if="searchInput !== ''" class="row">
+            <span id="search-results"></span>
+
+            <div id="search_display" class="showing-movies col d-flex">
+
+              <!-- previous search page button -->
+              <div v-if="searchIndex !== 1" @click="searchPrev" class="d-flex align-items-center justify-content-center">
+                <span><i class="fas fa-chevron-left fa-5x"></i></span>
               </div>
+
+            <!-- card template - search results -->
               <template v-for="movie in movies">
                 <div class="movie-template">
+
+                  <!-- movie poster -->
                   <div class="movie-poster">
-                    <img @error="errorFlag" :src="moviePosterImage + movie.poster_path" alt="">
+                    <img @error="errorPoster" :src="moviePosterImage + movie.poster_path" alt="">
                   </div>
+
+                  <!-- movie info -->
                   <div class="movie-info">
-                    <p><b>Titolo: </b>{{movie.title}}</p>
-                    <p><b>Titolo Originale: </b>{{movie.original_title}}</p>
-                    <p><b>Voto: </b><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></p>
-                    <p><b>Data di uscita: </b>{{movie.release_date}}</p>
-                    <p><b>Genere: </b><span class="comma" v-for="gen in genreFilter(movie)">{{gen.name}}</span></p>
-                    <p><b>Lingua originale: </b><img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt=""><p>
-                    <p v-if="movie.overview === ''"><b>Overview: </b>englishOverview(movie)</p> <!-- need to apply function whent it's fixed -->
-                    <p v-else><b>Overview: </b>{{movie.overview}}</p>
+                    <!-- title -->
+                    <p v-if="language === 'it-IT'"><b>Titolo: </b>{{movie.title}}</p>
+                    <p v-else-if="language === 'pt-BR'"><b>Título: </b>{{movie.title}}</p>
+                    <p v-else><b>Title: </b>{{movie.title}}</p>
+
+                    <!-- original title -->
+                    <p v-if="language === 'it-IT'"><b>Titolo Originale: </b>{{movie.original_title}}</p>
+                    <p v-else-if="language === 'pt-BR'"><b>Título Original: </b>{{movie.original_title}}</p>
+                    <p v-else><b>Original Title: </b>{{movie.original_title}}</p>
+
+                    <!-- rating -->
+                    <p>
+                      <span v-if="language === 'it-IT'"><b>Voto: </b></span>
+                      <span v-else-if="language === 'pt-BR'"><b>Votação: </b></span>
+                      <span v-else><b>Rate: </b></span>
+
+                      <span><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span></p>
+
+                    <!-- release date -->
+                    <p v-if="language === 'it-IT'"><b>Data di uscita: </b>{{movie.release_date}}</p>
+                    <p v-else-if="language === 'pt-BR'"><b>Data de lançamento: </b>{{movie.release_date}}</p>
+                    <p v-else><b>Release Date: </b>{{movie.release_date}}</p>
+
+                    <!-- genre -->
+                    <p>
+                      <span v-if="language === 'it-IT'"><b>Genere: </b></span>
+                      <span v-else-if="language === 'pt-BR'"><b>Gênero: </b></span>
+                      <span v-else><b>Genere: </b></span>
+
+                      <span class="comma" v-for="gen in genreFilter(movie)">{{gen.name}}</span></p>
+
+                    <!-- original language -->
+                    <p v-if="movie.original_language !== ''" >
+                      <span v-if="language === 'it-IT'"><b>Lingua originale: </b></span>
+                      <span v-else-if="language === 'pt-BR'"><b>Língua original: </b></span>
+                      <span v-else><b>Original language: </b></span>
+
+                      <img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt=""><p>
+
+                    <p v-else><img :src="errorFlag" alt=""></p>
+
+                    <p><b>Overview: </b>{{movie.overview}}</p>
                   </div>
                 </div>
               </template>
-              <div class="d-flex align-items-center fa-7x" id="next">
-                <span><i class="fas fa-chevron-right"></i></span>
+
+
+              <!-- next search page button -->
+              <span @click="searchNext" class="d-flex align-items-center justify-content-center" id="next-search">
+              </span>
+            </div>
+          </div> <!-- END SEARCH RESULT MOVIES -->
+
+          <!-- MOVIES LIST -->
+
+          <!-- lists created in acordance with the objects is homeMovies array -->
+          <div v-for="home in homeMovies" class="row">
+            <div :id="home.url" class="col-12 title-list">
+              <h3>{{home.name}}</h3>
+            </div>
+
+            <div class="showing-movies col d-flex">
+
+              <!-- previous page button -->
+              <div v-if="home.movieIndex !== 1" @click="prev(home)" class="d-flex align-items-center justify-content-center">
+                <span><i class="fas fa-chevron-left fa-5x"></i></span>
+              </div>
+
+            <!-- card template - homepage -->
+            <template v-for="movie in home.movies">
+              <div class="movie-template">
+
+                <!-- movie poster -->
+                <div class="movie-poster">
+                  <img @error="errorPoster" :src="moviePosterImage + movie.poster_path" alt="">
+                </div>
+
+                <!-- movie info -->
+                <div class="movie-info">
+                  <!-- title -->
+                  <p v-if="language === 'it-IT'"><b>Titolo: </b>{{movie.title}}</p>
+                  <p v-else-if="language === 'pt-BR'"><b>Título: </b>{{movie.title}}</p>
+                  <p v-else><b>Title: </b>{{movie.title}}</p>
+
+                  <!-- original title -->
+                  <p v-if="language === 'it-IT'"><b>Titolo Originale: </b>{{movie.original_title}}</p>
+                  <p v-else-if="language === 'pt-BR'"><b>Título Original: </b>{{movie.original_title}}</p>
+                  <p v-else><b>Original Title: </b>{{movie.original_title}}</p>
+
+                  <!-- rating -->
+                  <p>
+                    <span v-if="language === 'it-IT'"><b>Voto: </b></span>
+                    <span v-else-if="language === 'pt-BR'"><b>Votação: </b></span>
+                    <span v-else><b>Rate: </b></span>
+
+                    <span><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span></p>
+
+                  <!-- release date -->
+                  <p v-if="language === 'it-IT'"><b>Data di uscita: </b>{{movie.release_date}}</p>
+                  <p v-else-if="language === 'pt-BR'"><b>Data de lançamento: </b>{{movie.release_date}}</p>
+                  <p v-else><b>Release Date: </b>{{movie.release_date}}</p>
+
+                  <!-- genre -->
+                  <p>
+                    <span v-if="language === 'it-IT'"><b>Genere: </b></span>
+                    <span v-else-if="language === 'pt-BR'"><b>Gênero: </b></span>
+                    <span v-else><b>Genre: </b></span>
+
+                    <span class="comma" v-for="gen in genreFilter(movie)">{{gen.name}}</span></p>
+
+                  <!-- original language -->
+                  <p v-if="movie.original_language !== ''" >
+                    <span v-if="language === 'it-IT'"><b>Lingua originale: </b></span>
+                    <span v-else-if="language === 'pt-BR'"><b>Língua original: </b></span>
+                    <span v-else><b>Original language: </b></span>
+
+                    <img @error="errorFlag" :src="'img/flags/'+movie.original_language+'.svg'" alt=""><p>
+
+                  <p v-else><img :src="errorFlag" alt=""></p>
+
+                  <p><b>Overview: </b>{{movie.overview}}</p>
+                </div>
+              </div>
+            </template>
+
+
+              <!-- next page button -->
+              <div @click="next(home)" class="d-flex align-items-center justify-content-center">
+                <span><i class="fas fa-chevron-right fa-5x"></i></span>
               </div>
             </div>
+          </div> <!-- END MOVIES -->
+        </div><!-- END CONTAINER -->
+      </main>
+      <footer>
+        <div class="row">
+          <div class="col d-flex justify-content-center align-items-center">
+            <!-- logo  -->
+            <img src="img/boolflixlogo.png" alt="logo">
+            <!-- text  -->
+            <p>Created by Mirelle Nascimento</p>
           </div>
         </div>
-
-      </main>
-
-    </div>
-
-
+      </footer>
+    </div><!-- END Vue #root -->
 
     <!-- MAIN SCRIPT -->
     <script src="js/main.js" charset="utf-8"></script>

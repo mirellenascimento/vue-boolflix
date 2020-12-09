@@ -116,7 +116,8 @@
                       <span v-else-if="language === 'pt-BR'"><b>Votação: </b></span>
                       <span v-else><b>Rate: </b></span>
 
-                      <span><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span></p>
+                      <span><i v-for="star in 5" :class="ratingStars(movie.vote_average)>=star?'fas fa-star':'far fa-star'"></i></span>
+                    </p>
 
                     <!-- release date -->
                     <p v-if="language === 'it-IT'"><b>Data di uscita: </b>{{movie.release_date}}</p>

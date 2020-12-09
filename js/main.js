@@ -63,7 +63,8 @@ const myApp = new Vue({
     //first colunm
     movies: [],
 
-    //searching movies
+    //searching movies and tv series
+    tvSeries: [],
     searchInput: '',
     searchIndex: 1,
   },
@@ -108,18 +109,25 @@ const myApp = new Vue({
           }
         }).then(mov => {
           this.movies = mov.data.results
+
+          axios.get('https://api.themoviedb.org/3/search/tv', {
+            params: {
+              'api_key': API_KEY,
+              language: this.language,
+              query: this.searchInput,
+              page: this.searchIndex,
+            }
+          }).then(tv => {
+            this.tvSeries = tv.data.results
+
+            this.tvInfo();
+            for (var i = 0; i < this.tvSeries.length; i++) {
+              this.movies.push(this.tvSeries[i]);
+            }
+          });
+
         });
 
-        axios.get('https://api.themoviedb.org/3/search/tv', {
-          params: {
-            'api_key': API_KEY,
-            language: this.language,
-            query: this.searchInput,
-            page: this.searchIndex,
-          }
-        }).then(tv => {
-          tv.data.results.forEach(movie => this.movies.push(movie));
-        });
 
         document.getElementById('search-results').innerHTML = `
         <div class="col-12 title-list">
@@ -224,6 +232,8 @@ const myApp = new Vue({
     changeLanguage(){
       this.moviesList();
       this.setGenre();
+      this.searchMovie();
+
     },
 
     // Tranforms vote from 1 to 10 into 1 to 5 stars
@@ -257,5 +267,24 @@ const myApp = new Vue({
     genreFilter(movie){
       return this.genreMovies.filter(e => movie.genre_ids.includes(e.id));
     },
+
+    //changes the keys on tv objects to match wit movies
+    tvInfo(){
+      this.tvSeries = this.tvSeries.map(function(obj) {
+          obj['title'] = obj['name']; // Assign new key
+          delete obj['name']; // Delete old key
+
+          obj['original_title'] = obj['original_name']; // Assign new key
+          delete obj['original_name']; // Delete old key
+
+          obj['release_date'] = obj['first_air_date']; // Assign new key
+          delete obj['first_air_date']; // Delete old key
+
+
+
+          return obj;
+      });
+    },
+
   },
 });

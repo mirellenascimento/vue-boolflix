@@ -70,7 +70,11 @@ header img{
 .showing-movies{
   overflow-y: scroll;
   -ms-overflow-style: none;
-   scrollbar-width: none;
+  scrollbar-width: none;
+}
+
+.showing-movies::-webkit-scrollbar {
+    display: none;
 }
 
 .movie-template{
@@ -103,8 +107,11 @@ header img{
   padding: 40px;
   overflow-x: scroll;
   -ms-overflow-style: none;
-   scrollbar-width: none;
  }
+
+ .movie-info::-webkit-scrollbar {
+    display: none;
+}
 
 .movie-info img{
   width: 20px;
